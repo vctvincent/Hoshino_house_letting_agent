@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.reams.mapper.ViewingMapper">
+
+    <resultMap id="BaseResultMap" type="com.reams.entity.Viewing">
+        <id column="viewing_id" property="id"/>
+        <result column="customer_id" property="customerId"/>
+        <result column="agent_id" property="agentId"/>
+        <result column="house_id" property="houseId"/>
+        <result column="viewing_appoint_time" property="appointTime"/>
+        <result column="viewing_actual_time" property="actualTime"/>
+        <result column="viewing_address" property="viewingAddress"/>
+        <result column="viewing_status" property="status"/>
+        <result column="viewing_cancel_reason" property="cancelReason"/>
+        <result column="viewing_cancel_by_type" property="cancelByType"/>
+        <result column="viewing_cancel_by_id" property="cancelById"/>
+        <result column="viewing_remark" property="remark"/>
+        <result column="customer_phone" property="customerPhone"/>
+        <result column="viewing_create_time" property="createTime"/>
+        <result column="viewing_update_time" property="updateTime"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="customer_avatar" property="customerAvatar"/>
+        <result column="agent_name" property="agentName"/>
+        <result column="agent_phone" property="agentPhone"/>
+        <result column="agent_avatar" property="agentAvatar"/>
+        <result column="house_title" property="houseTitle"/>
+        <result column="house_address" property="houseAddress"/>
+        <result column="agent_review_submitted" property="agentReviewSubmitted"/>
+    </resultMap>
+
+    <sql id="ViewingJoinColumns">
+        v.*,
+        c.customer_nickname AS customer_name,
+        c.customer_avatar AS customer_avatar,
+        c.customer_phone AS customer_phone,
+        a.agent_name AS agent_name,
+        a.agent_phone AS agent_phone,
+        a.agent_avatar AS agent_avatar,
+        h.house_title AS house_title,
+        h.house_address AS house_address,
+        CASE WHEN ar.review_id IS NULL THEN 0 ELSE 1 END AS agent_review_submitted
+    </sql>
+
+    <sql id="ViewingJoins">
+        FROM h_viewing v
+        LEFT JOIN sys_customer c ON v.customer_id = c.customer_id
+        LEFT JOIN sys_agent a ON v.agent_id = a.agent_id
+        LEFT JOIN h_house h ON v.house_id = h.house_id
+        LEFT JOIN h_review ar
+            ON ar.viewing_id = v.viewing_id
+           AND ar.review_target_type = 2
+    </sql>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ViewingJoinColumns"/>
+        <include refid="ViewingJoins"/>
+        <where>
+            <if test="customerId != null">
+                AND v.customer_id = #{customerId}
+            </if>
+            <if test="agentId != null">
+                AND v.agent_id = #{agentId}
+            </if>
+            <if test="houseId != null">
+                AND v.house_id = #{houseId}
+            </if>
+            <if test="status != null">
+                AND v.viewing_status = #{status}
+            </if>
+        </where>
+        ORDER BY v.viewing_appoint_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ViewingJoinColumns"/>
+        <include refid="ViewingJoins"/>
+        WHERE v.viewing_id = #{id}
+    </select>
+
+    <select id="selectByCustomerId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ViewingJoinColumns"/>
+        <include refid="ViewingJoins"/>
+        WHERE v.customer_id = #{customerId}
+        ORDER BY v.viewing_appoint_time DESC
+    </select>
+
+    <select id="selectByAgentId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ViewingJoinColumns"/>
+        <include refid="ViewingJoins"/>
+        WHERE v.agent_id = #{agentId}
+        ORDER BY v.viewing_appoint_time DESC
+    </select>
+
+    <select id="selectDistinctCustomersByAgentId" resultType="java.util.Map">
+        SELECT DISTINCT
+            c.customer_id AS id,
+            c.customer_nickname AS nickname,
+            c.customer_phone AS phone,
+            c.customer_status AS status
+        FROM h_viewing v
+        INNER JOIN sys_customer c ON v.customer_id = c.customer_id
+        WHERE v.agent_id = #{agentId}
+          AND c.customer_status = 1
+        ORDER BY c.customer_nickname
+    </select>
+
+    <select id="selectByHouseId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ViewingJoinColumns"/>
+        <include refid="ViewingJoins"/>
+        WHERE v.house_id = #{houseId}
+        ORDER BY v.viewing_appoint_time DESC
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*)
+        FROM h_viewing v
+        <where>
+            <if test="customerId != null">
+                AND v.customer_id = #{customerId}
+            </if>
+            <if test="agentId != null">
+                AND v.agent_id = #{agentId}
+            </if>
+            <if test="houseId != null">
+                AND v.house_id = #{houseId}
+            </if>
+            <if test="status != null">
+                AND v.viewing_status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO h_viewing (
+            customer_id,
+            agent_id,
+            house_id,
+            viewing_appoint_time,
+            viewing_address,
+            viewing_status,
+            viewing_cancel_reason,
+            viewing_cancel_by_type,
+            viewing_cancel_by_id,
+            viewing_remark,
+            customer_phone
+        ) VALUES (
+            #{customerId},
+            #{agentId},
+            #{houseId},
+            #{appointTime},
+            #{viewingAddress},
+            #{status},
+            #{cancelReason},
+            #{cancelByType},
+            #{cancelById},
+            #{remark},
+            #{customerPhone}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE h_viewing
+        <set>
+            <if test="appointTime != null">viewing_appoint_time = #{appointTime},</if>
+            <if test="actualTime != null">viewing_actual_time = #{actualTime},</if>
+            <if test="viewingAddress != null">viewing_address = #{viewingAddress},</if>
+            <if test="status != null">viewing_status = #{status},</if>
+            <if test="cancelReason != null">viewing_cancel_reason = #{cancelReason},</if>
+            <if test="cancelByType != null">viewing_cancel_by_type = #{cancelByType},</if>
+            <if test="cancelById != null">viewing_cancel_by_id = #{cancelById},</if>
+            <if test="remark != null">viewing_remark = #{remark},</if>
+            <if test="customerPhone != null">customer_phone = #{customerPhone},</if>
+        </set>
+        WHERE viewing_id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM h_viewing WHERE viewing_id = #{id}
+    </delete>
+
+</mapper>

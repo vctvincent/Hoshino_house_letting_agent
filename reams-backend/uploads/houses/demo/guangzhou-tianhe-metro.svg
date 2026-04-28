@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#be123c"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect x="100" y="540" width="1000" height="82" rx="20" fill="#ffedd5"/>
+  <rect x="170" y="300" width="860" height="140" rx="70" fill="rgba(255,255,255,0.16)"/>
+  <circle cx="280" cy="370" r="52" fill="#fff7ed"/>
+  <circle cx="920" cy="370" r="52" fill="#fff7ed"/>
+  <text x="140" y="170" fill="#fff7ed" font-size="78" font-family="Arial, sans-serif" font-weight="700">TIANHE METRO</text>
+  <text x="144" y="235" fill="#ffedd5" font-size="32" font-family="Arial, sans-serif">core transit demo cover</text>
+</svg>

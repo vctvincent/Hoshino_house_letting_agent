@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.reams.mapper.TransactionMapper">
+
+    <!-- 交易主表 ResultMap -->
+    <resultMap id="BaseResultMap" type="com.reams.entity.Transaction">
+        <id column="transaction_id" property="id"/>
+        <result column="house_id" property="houseId"/>
+        <result column="customer_id" property="customerId"/>
+        <result column="agent_id" property="agentId"/>
+        <result column="viewing_id" property="viewingId"/>
+        <result column="transaction_no" property="transactionNo"/>
+        <result column="transaction_final_price" property="finalPrice"/>
+        <result column="transaction_deposit" property="deposit"/>
+        <result column="transaction_payment_method" property="paymentMethod"/>
+        <result column="transaction_contract_url" property="contractUrl"/>
+        <result column="transaction_deal_date" property="dealDate"/>
+        <result column="transaction_status" property="status"/>
+        <result column="transaction_status_history" property="statusHistory"/>
+        <result column="transaction_remark" property="remark"/>
+        <result column="transaction_create_time" property="createTime"/>
+        <result column="transaction_update_time" property="updateTime"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="customer_phone" property="customerPhone"/>
+        <result column="agent_name" property="agentName"/>
+        <result column="house_title" property="houseTitle"/>
+        <result column="house_address" property="houseAddress"/>
+    </resultMap>
+
+    <!-- ========== 交易主表操作 ========== -->
+
+    <!-- 分页查询交易 -->
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT t.*,
+               c.customer_nickname as customer_name,
+               c.customer_phone as customer_phone,
+               a.agent_name as agent_name,
+               h.house_title as house_title,
+               h.house_address as house_address
+        FROM h_transaction t
+        LEFT JOIN sys_customer c ON t.customer_id = c.customer_id
+        LEFT JOIN sys_agent a ON t.agent_id = a.agent_id
+        LEFT JOIN h_house h ON t.house_id = h.house_id
+        <where>
+            <if test="customerId != null">
+                AND t.customer_id = #{customerId}
+            </if>
+            <if test="agentId != null">
+                AND t.agent_id = #{agentId}
+            </if>
+            <if test="houseId != null">
+                AND t.house_id = #{houseId}
+            </if>
+            <if test="status != null">
+                AND t.transaction_status = #{status}
+            </if>
+        </where>
+        ORDER BY t.transaction_create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计交易数量 -->
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM h_transaction t
+        <where>
+            <if test="customerId != null">
+                AND t.customer_id = #{customerId}
+            </if>
+            <if test="agentId != null">
+                AND t.agent_id = #{agentId}
+            </if>
+            <if test="houseId != null">
+                AND t.house_id = #{houseId}
+            </if>
+            <if test="status != null">
+                AND t.transaction_status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据 ID 查询交易详情 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT t.*,
+               c.customer_nickname as customer_name,
+               c.customer_phone as customer_phone,
+               a.agent_name as agent_name,
+               h.house_title as house_title,
+               h.house_address as house_address
+        FROM h_transaction t
+        LEFT JOIN sys_customer c ON t.customer_id = c.customer_id
+        LEFT JOIN sys_agent a ON t.agent_id = a.agent_id
+        LEFT JOIN h_house h ON t.house_id = h.house_id
+        WHERE t.transaction_id = #{id}
+    </select>
+
+    <!-- 根据客户 ID 查询交易 -->
+    <select id="selectByCustomerId" resultMap="BaseResultMap">
+        SELECT t.*,
+               a.agent_name as agent_name,
+               h.house_title as house_title
+        FROM h_transaction t
+        LEFT JOIN sys_agent a ON t.agent_id = a.agent_id
+        LEFT JOIN h_house h ON t.house_id = h.house_id
+        WHERE t.customer_id = #{customerId}
+        ORDER BY t.transaction_create_time DESC
+    </select>
+
+    <!-- 根据中介 ID 查询交易 -->
+    <select id="selectByAgentId" resultMap="BaseResultMap">
+        SELECT t.*,
+               c.customer_nickname as customer_name,
+               h.house_title as house_title
+        FROM h_transaction t
+        LEFT JOIN sys_customer c ON t.customer_id = c.customer_id
+        LEFT JOIN h_house h ON t.house_id = h.house_id
+        WHERE t.agent_id = #{agentId}
+        ORDER BY t.transaction_create_time DESC
+    </select>
+
+    <!-- 根据交易单号查询 -->
+    <select id="selectByTransactionNo" resultMap="BaseResultMap">
+        SELECT t.*,
+               c.customer_nickname as customer_name,
+               c.customer_phone as customer_phone,
+               a.agent_name as agent_name,
+               h.house_title as house_title
+        FROM h_transaction t
+        LEFT JOIN sys_customer c ON t.customer_id = c.customer_id
+        LEFT JOIN sys_agent a ON t.agent_id = a.agent_id
+        LEFT JOIN h_house h ON t.house_id = h.house_id
+        WHERE t.transaction_no = #{transactionNo}
+    </select>
+
+    <!-- 插入交易 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO h_transaction (
+            house_id, customer_id, agent_id, viewing_id, transaction_no,
+            transaction_final_price, transaction_deposit, transaction_payment_method, transaction_contract_url, transaction_deal_date,
+            transaction_status, transaction_remark
+        ) VALUES (
+            #{houseId}, #{customerId}, #{agentId}, #{viewingId}, #{transactionNo},
+            #{finalPrice}, #{deposit}, #{paymentMethod}, #{contractUrl}, #{dealDate},
+            #{status}, #{remark}
+        )
+    </insert>
+
+    <!-- 更新交易 -->
+    <update id="update">
+        UPDATE h_transaction
+        <set>
+            <if test="finalPrice != null">transaction_final_price = #{finalPrice},</if>
+            <if test="deposit != null">transaction_deposit = #{deposit},</if>
+            <if test="paymentMethod != null">transaction_payment_method = #{paymentMethod},</if>
+            <if test="contractUrl != null">transaction_contract_url = #{contractUrl},</if>
+            <if test="dealDate != null">transaction_deal_date = #{dealDate},</if>
+            <if test="status != null">transaction_status = #{status},</if>
+            <if test="statusHistory != null">transaction_status_history = #{statusHistory},</if>
+            <if test="remark != null">transaction_remark = #{remark},</if>
+        </set>
+        WHERE transaction_id = #{id}
+    </update>
+
+    <!-- 更新交易状态 (同时记录状态历史) -->
+    <update id="updateStatus">
+        UPDATE h_transaction
+        SET transaction_status = #{status},
+            transaction_status_history = #{statusHistory},
+            transaction_update_time = NOW()
+        WHERE transaction_id = #{id}
+    </update>
+
+    <!-- 更新价格和状态历史（用于协商） -->
+    <update id="updatePriceAndHistory">
+        UPDATE h_transaction
+        SET transaction_final_price = #{newPrice},
+            transaction_status_history = #{statusHistory},
+            transaction_update_time = NOW()
+        WHERE transaction_id = #{id}
+    </update>
+
+    <!-- 统计成交额 -->
+    <select id="sumFinalPrice" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(transaction_final_price), 0) FROM h_transaction t
+        <where>
+            <if test="agentId != null">
+                AND t.agent_id = #{agentId}
+            </if>
+            <if test="status != null">
+                AND t.transaction_status = #{status}
+            </if>
+            <if test="startDate != null">
+                AND t.transaction_deal_date &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND t.transaction_deal_date &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <!-- 删除交易记录 -->
+    <select id="selectTransactionOverview" resultType="java.util.Map">
+        SELECT
+            COUNT(*) AS totalTransactionCount,
+            SUM(CASE WHEN t.transaction_status = 3 THEN 1 ELSE 0 END) AS completedTransactionCount,
+            SUM(CASE WHEN t.transaction_status = 0 THEN 1 ELSE 0 END) AS pendingTransactionCount,
+            SUM(CASE WHEN t.transaction_status = 1 THEN 1 ELSE 0 END) AS negotiatingTransactionCount,
+            SUM(CASE WHEN t.transaction_status = 2 THEN 1 ELSE 0 END) AS signedTransactionCount,
+            SUM(CASE WHEN t.transaction_status = 4 THEN 1 ELSE 0 END) AS cancelledTransactionCount,
+            COALESCE(ROUND(SUM(CASE WHEN t.transaction_status = 3 THEN t.transaction_final_price ELSE 0 END), 2), 0) AS completedSalesAmount,
+            COALESCE(ROUND(AVG(CASE WHEN t.transaction_status = 3 THEN t.transaction_final_price END), 2), 0) AS averageDealPrice,
+            COALESCE(ROUND(SUM(CASE
+                WHEN t.transaction_status = 3
+                 AND DATE_FORMAT(COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time)), '%Y-%m') = DATE_FORMAT(CURRENT_DATE(), '%Y-%m')
+                THEN t.transaction_final_price ELSE 0 END), 2), 0) AS currentMonthSalesAmount,
+            SUM(CASE
+                WHEN t.transaction_status = 3
+                 AND DATE_FORMAT(COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time)), '%Y-%m') = DATE_FORMAT(CURRENT_DATE(), '%Y-%m')
+                THEN 1 ELSE 0 END) AS currentMonthCompletedCount,
+            COALESCE(ROUND(SUM(CASE
+                WHEN t.transaction_status = 3
+                 AND DATE_FORMAT(COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time)), '%Y-%m') = DATE_FORMAT(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH), '%Y-%m')
+                THEN t.transaction_final_price ELSE 0 END), 2), 0) AS lastMonthSalesAmount,
+            SUM(CASE
+                WHEN t.transaction_status = 3
+                 AND DATE_FORMAT(COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time)), '%Y-%m') = DATE_FORMAT(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH), '%Y-%m')
+                THEN 1 ELSE 0 END) AS lastMonthCompletedCount
+        FROM h_transaction t
+    </select>
+
+    <select id="selectMonthlySales" resultType="java.util.Map">
+        SELECT
+            DATE_FORMAT(COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time)), '%Y-%m') AS month,
+            COUNT(*) AS transactionCount,
+            COALESCE(ROUND(SUM(t.transaction_final_price), 2), 0) AS salesAmount,
+            COALESCE(ROUND(AVG(t.transaction_final_price), 2), 0) AS averagePrice
+        FROM h_transaction t
+        WHERE t.transaction_status = 3
+          AND COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time)) >= DATE_FORMAT(DATE_SUB(CURRENT_DATE(), INTERVAL 5 MONTH), '%Y-%m-01')
+        GROUP BY DATE_FORMAT(COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time)), '%Y-%m')
+        ORDER BY month ASC
+    </select>
+
+    <select id="selectDistrictSalesRanking" resultType="java.util.Map">
+        SELECT
+            h.house_province AS province,
+            h.house_city AS city,
+            h.house_district AS district,
+            COUNT(*) AS transactionCount,
+            COALESCE(ROUND(SUM(t.transaction_final_price), 2), 0) AS salesAmount,
+            COALESCE(ROUND(AVG(t.transaction_final_price), 2), 0) AS averagePrice,
+            COALESCE(ROUND(AVG(
+                CASE
+                    WHEN h.house_unit_price IS NOT NULL AND h.house_unit_price &gt; 0 THEN h.house_unit_price
+                    WHEN h.house_area IS NOT NULL AND h.house_area &gt; 0 THEN (h.house_price * 10000 / h.house_area)
+                    ELSE NULL
+                END
+            ), 2), 0) AS averageUnitPrice
+        FROM h_transaction t
+        INNER JOIN h_house h ON t.house_id = h.house_id
+        WHERE t.transaction_status = 3
+          <if test="offsetMonths != null and offsetMonths &gt;= 0">
+            AND COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time))
+                &gt;= DATE_FORMAT(DATE_SUB(CURRENT_DATE(), INTERVAL #{offsetMonths} MONTH), '%Y-%m-01')
+          </if>
+          AND h.house_province IS NOT NULL
+          AND h.house_province != ''
+          AND h.house_district IS NOT NULL
+          AND h.house_district != ''
+        GROUP BY h.house_province, h.house_city, h.house_district
+        ORDER BY salesAmount DESC, transactionCount DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectTopAgentSales" resultType="java.util.Map">
+        SELECT
+            a.agent_id AS agentId,
+            a.agent_name AS agentName,
+            a.agent_company AS company,
+            a.agent_avatar AS avatar,
+            COUNT(*) AS transactionCount,
+            COALESCE(ROUND(SUM(t.transaction_final_price), 2), 0) AS salesAmount,
+            COALESCE(ROUND(AVG(t.transaction_final_price), 2), 0) AS averagePrice
+        FROM h_transaction t
+        INNER JOIN sys_agent a ON t.agent_id = a.agent_id
+        WHERE t.transaction_status = 3
+          <if test="offsetMonths != null and offsetMonths &gt;= 0">
+            AND COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time))
+                &gt;= DATE_FORMAT(DATE_SUB(CURRENT_DATE(), INTERVAL #{offsetMonths} MONTH), '%Y-%m-01')
+          </if>
+        GROUP BY a.agent_id, a.agent_name, a.agent_company, a.agent_avatar
+        ORDER BY salesAmount DESC, transactionCount DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectCompanySalesRanking" resultType="java.util.Map">
+        SELECT
+            a.agent_company AS company,
+            COUNT(*) AS transactionCount,
+            COALESCE(ROUND(SUM(t.transaction_final_price), 2), 0) AS salesAmount,
+            COALESCE(ROUND(AVG(t.transaction_final_price), 2), 0) AS averagePrice,
+            COUNT(DISTINCT a.agent_id) AS agentCount
+        FROM h_transaction t
+        INNER JOIN sys_agent a ON t.agent_id = a.agent_id
+        WHERE t.transaction_status = 3
+          AND a.agent_company IS NOT NULL
+          AND a.agent_company != ''
+          <if test="offsetMonths != null and offsetMonths &gt;= 0">
+            AND COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time))
+                &gt;= DATE_FORMAT(DATE_SUB(CURRENT_DATE(), INTERVAL #{offsetMonths} MONTH), '%Y-%m-01')
+          </if>
+        GROUP BY a.agent_company
+        ORDER BY salesAmount DESC, transactionCount DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectStatusDistribution" resultType="java.util.Map">
+        SELECT
+            t.transaction_status AS status,
+            COUNT(*) AS count
+        FROM h_transaction t
+        GROUP BY t.transaction_status
+        ORDER BY t.transaction_status ASC
+    </select>
+
+    <select id="selectMonthlySalesByAgentId" resultType="java.util.Map">
+        SELECT
+            DATE_FORMAT(COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time)), '%Y-%m') AS month,
+            COUNT(*) AS transactionCount,
+            COALESCE(ROUND(SUM(t.transaction_final_price), 2), 0) AS salesAmount,
+            COALESCE(ROUND(AVG(t.transaction_final_price), 2), 0) AS averagePrice
+        FROM h_transaction t
+        WHERE t.transaction_status = 3
+          AND t.agent_id = #{agentId}
+          AND COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time)) >= DATE_FORMAT(DATE_SUB(CURRENT_DATE(), INTERVAL 5 MONTH), '%Y-%m-01')
+        GROUP BY DATE_FORMAT(COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time)), '%Y-%m')
+        ORDER BY month ASC
+    </select>
+
+    <select id="selectDistrictSalesRankingByAgentId" resultType="java.util.Map">
+        SELECT
+            h.house_province AS province,
+            h.house_city AS city,
+            h.house_district AS district,
+            COUNT(*) AS transactionCount,
+            COALESCE(ROUND(SUM(t.transaction_final_price), 2), 0) AS salesAmount,
+            COALESCE(ROUND(AVG(t.transaction_final_price), 2), 0) AS averagePrice
+        FROM h_transaction t
+        INNER JOIN h_house h ON t.house_id = h.house_id
+        WHERE t.transaction_status = 3
+          AND t.agent_id = #{agentId}
+          <if test="offsetMonths != null and offsetMonths &gt;= 0">
+            AND COALESCE(t.transaction_deal_date, DATE(t.transaction_update_time))
+                &gt;= DATE_FORMAT(DATE_SUB(CURRENT_DATE(), INTERVAL #{offsetMonths} MONTH), '%Y-%m-01')
+          </if>
+          AND h.house_province IS NOT NULL
+          AND h.house_province != ''
+          AND h.house_district IS NOT NULL
+          AND h.house_district != ''
+        GROUP BY h.house_province, h.house_city, h.house_district
+        ORDER BY salesAmount DESC, transactionCount DESC
+        LIMIT #{limit}
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM h_transaction WHERE transaction_id = #{id}
+    </delete>
+
+</mapper>

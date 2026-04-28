@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.reams.mapper.FavoriteMapper">
+
+    <resultMap id="BaseResultMap" type="com.reams.entity.Favorite">
+        <id column="favorite_id" property="id"/>
+        <result column="customer_id" property="customerId"/>
+        <result column="house_id" property="houseId"/>
+        <result column="favorite_create_time" property="createTime"/>
+        <result column="customer_nickname" property="customerName"/>
+        <result column="house_title" property="houseTitle"/>
+        <result column="house_address" property="houseAddress"/>
+        <result column="house_images" property="houseImage"/>
+        <result column="house_price" property="housePrice"/>
+        <result column="house_type" property="houseType"/>
+        <result column="house_area" property="houseArea"/>
+    </resultMap>
+
+    <select id="selectByCustomerId" resultMap="BaseResultMap">
+        SELECT f.*, c.customer_nickname as customer_name,
+               h.house_title as house_title, h.house_address as house_address,
+               JSON_UNQUOTE(JSON_EXTRACT(h.house_images, '$[0]')) as house_images, 
+               h.house_price as house_price,
+               h.house_type as house_type, h.house_area as house_area
+        FROM h_favorite f
+        LEFT JOIN sys_customer c ON f.customer_id = c.customer_id
+        LEFT JOIN h_house h ON f.house_id = h.house_id
+        WHERE f.customer_id = #{customerId}
+        ORDER BY f.favorite_create_time DESC
+    </select>
+
+    <select id="checkFavorite" resultType="int">
+        SELECT COUNT(*) FROM h_favorite
+        WHERE customer_id = #{customerId} AND house_id = #{houseId}
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT f.*, c.customer_nickname as customer_name,
+               h.house_title as house_title, h.house_address as house_address,
+               JSON_UNQUOTE(JSON_EXTRACT(h.house_images, '$[0]')) as house_image, 
+               h.house_price as house_price
+        FROM h_favorite f
+        LEFT JOIN sys_customer c ON f.customer_id = c.customer_id
+        LEFT JOIN h_house h ON f.house_id = h.house_id
+        WHERE f.favorite_id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO h_favorite (customer_id, house_id)
+        VALUES (#{customerId}, #{houseId})
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM h_favorite WHERE favorite_id = #{id}
+    </delete>
+
+    <delete id="delete">
+        DELETE FROM h_favorite WHERE customer_id = #{customerId} AND house_id = #{houseId}
+    </delete>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM h_favorite WHERE customer_id = #{customerId}
+    </select>
+
+</mapper>

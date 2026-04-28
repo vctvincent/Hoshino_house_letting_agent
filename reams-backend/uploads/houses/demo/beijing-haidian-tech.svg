@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect x="90" y="110" width="460" height="300" rx="32" fill="rgba(255,255,255,0.14)"/>
+  <rect x="650" y="170" width="420" height="180" rx="28" fill="rgba(255,255,255,0.12)"/>
+  <rect x="120" y="520" width="950" height="90" rx="20" fill="#d6f5ef"/>
+  <circle cx="250" cy="565" r="24" fill="#0f766e"/>
+  <circle cx="380" cy="565" r="24" fill="#0f766e"/>
+  <circle cx="510" cy="565" r="24" fill="#0f766e"/>
+  <text x="118" y="205" fill="#ffffff" font-size="80" font-family="Arial, sans-serif" font-weight="700">HAIDIAN TECH</text>
+  <text x="122" y="275" fill="#dbeafe" font-size="34" font-family="Arial, sans-serif">campus and innovation district</text>
+</svg>

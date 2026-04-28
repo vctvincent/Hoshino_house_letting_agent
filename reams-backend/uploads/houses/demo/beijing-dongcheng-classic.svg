@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c2d12"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect x="150" y="290" width="900" height="260" rx="22" fill="#fde68a"/>
+  <polygon points="130,320 600,150 1070,320" fill="#fef3c7"/>
+  <rect x="250" y="360" width="140" height="190" fill="#7c2d12"/>
+  <rect x="530" y="360" width="140" height="190" fill="#7c2d12"/>
+  <rect x="810" y="360" width="140" height="190" fill="#7c2d12"/>
+  <text x="150" y="130" fill="#fff7ed" font-size="76" font-family="Arial, sans-serif" font-weight="700">DONGCHENG CLASSIC</text>
+  <text x="152" y="190" fill="#ffedd5" font-size="32" font-family="Arial, sans-serif">historic courtyard style demo cover</text>
+</svg>

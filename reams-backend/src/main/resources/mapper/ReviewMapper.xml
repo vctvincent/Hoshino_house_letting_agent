@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.reams.mapper.ReviewMapper">
+
+    <resultMap id="BaseResultMap" type="com.reams.entity.Review">
+        <id column="review_id" property="id"/>
+        <result column="transaction_id" property="transactionId"/>
+        <result column="house_id" property="houseId"/>
+        <result column="agent_id" property="agentId"/>
+        <result column="customer_id" property="customerId"/>
+        <result column="review_target_type" property="targetType"/>
+        <result column="review_rating" property="rating"/>
+        <result column="review_content" property="content"/>
+        <result column="review_images" property="images"/>
+        <result column="review_reply_content" property="replyContent"/>
+        <result column="review_reply_time" property="replyTime"/>
+        <result column="review_is_show" property="isShow"/>
+        <result column="review_create_time" property="createTime"/>
+        <result column="review_update_time" property="updateTime"/>
+        <result column="customer_nickname" property="customerName"/>
+        <result column="customer_avatar" property="customerAvatar"/>
+        <result column="agent_name" property="agentName"/>
+        <result column="agent_avatar" property="agentAvatar"/>
+        <result column="house_title" property="houseTitle"/>
+    </resultMap>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+      SELECT r.*,
+               c.customer_nickname as customer_nickname,
+               c.customer_avatar as customer_avatar,
+               a.agent_name as agent_name,
+               a.agent_avatar as agent_avatar,
+               h.house_title as house_title
+        FROM h_review r
+        LEFT JOIN sys_customer c ON r.customer_id = c.customer_id
+        LEFT JOIN sys_agent a ON r.agent_id= a.agent_id
+        LEFT JOIN h_house h ON r.house_id = h.house_id
+        <where>
+            <if test="houseId != null">
+                AND r.house_id = #{houseId}
+            </if>
+            <if test="agentId != null">
+                AND r.agent_id= #{agentId}
+            </if>
+            <if test="customerId != null">
+                AND r.customer_id = #{customerId}
+            </if>
+            <if test="targetType != null">
+                AND r.review_target_type = #{targetType}
+            </if>
+            <if test="isShow != null">
+                AND r.review_is_show = #{isShow}
+            </if>
+        </where>
+        ORDER BY r.review_create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+      SELECT r.*,
+               c.customer_nickname as customer_nickname,
+               c.customer_avatar as customer_avatar,
+               a.agent_name as agent_name,
+               a.agent_avatar as agent_avatar,
+               h.house_title as house_title
+        FROM h_review r
+        LEFT JOIN sys_customer c ON r.customer_id = c.customer_id
+        LEFT JOIN sys_agent a ON r.agent_id= a.agent_id
+        LEFT JOIN h_house h ON r.house_id = h.house_id
+        WHERE r.review_id = #{id}
+    </select>
+
+    <select id="selectByTransactionId" resultMap="BaseResultMap">
+      SELECT r.*,
+             c.customer_nickname as customer_nickname,
+             c.customer_avatar as customer_avatar
+        FROM h_review r
+        LEFT JOIN sys_customer c ON r.customer_id = c.customer_id
+        WHERE r.transaction_id = #{transactionId}
+    </select>
+
+    <select id="selectByHouseId" resultMap="BaseResultMap">
+      SELECT r.*,
+             c.customer_nickname as customer_nickname,
+             c.customer_avatar as customer_avatar,
+             a.agent_name as agent_name,
+             a.agent_avatar as agent_avatar
+        FROM h_review r
+        LEFT JOIN sys_customer c ON r.customer_id= c.customer_id
+        LEFT JOIN sys_agent a ON r.agent_id = a.agent_id
+        WHERE r.house_id = #{houseId}
+          AND r.review_target_type = 1
+          AND r.review_is_show = 1
+        ORDER BY r.review_create_time DESC
+    </select>
+
+    <select id="selectByAgentId" resultMap="BaseResultMap">
+      SELECT r.*,
+             c.customer_nickname as customer_nickname,
+             c.customer_avatar as customer_avatar,
+             h.house_title as house_title
+        FROM h_review r
+        LEFT JOIN sys_customer c ON r.customer_id = c.customer_id
+        LEFT JOIN h_house h ON r.house_id = h.house_id
+        WHERE r.agent_id = #{agentId}
+          AND r.review_target_type = 2
+          AND r.review_is_show = 1
+        ORDER BY r.review_create_time DESC
+    </select>
+
+    <select id="selectByCustomerId" resultMap="BaseResultMap">
+      SELECT r.*,
+             a.agent_name as agent_name,
+             a.agent_avatar as agent_avatar,
+             h.house_title as house_title
+        FROM h_review r
+        LEFT JOIN sys_agent a ON r.agent_id = a.agent_id
+        LEFT JOIN h_house h ON r.house_id= h.house_id
+        WHERE r.customer_id = #{customerId}
+        ORDER BY r.review_create_time DESC
+    </select>
+
+    <select id="selectLatest" resultMap="BaseResultMap">
+      SELECT r.*,
+             c.customer_nickname as customer_nickname,
+             c.customer_avatar as customer_avatar,
+             a.agent_name as agent_name,
+             a.agent_avatar as agent_avatar
+        FROM h_review r
+        LEFT JOIN sys_customer c ON r.customer_id= c.customer_id
+        LEFT JOIN sys_agent a ON r.agent_id = a.agent_id
+        WHERE r.review_is_show = 1
+        ORDER BY r.review_create_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="count" resultType="long">
+       SELECT COUNT(*) FROM h_review r
+        <where>
+            <if test="houseId != null">
+                AND r.house_id = #{houseId}
+            </if>
+            <if test="agentId != null">
+                AND r.agent_id = #{agentId}
+            </if>
+            <if test="customerId != null">
+                AND r.customer_id = #{customerId}
+            </if>
+            <if test="targetType != null">
+                AND r.review_target_type = #{targetType}
+            </if>
+            <if test="isShow != null">
+                AND r.review_is_show = #{isShow}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAvgRatingByAgentId" resultType="java.lang.Double">
+       SELECT AVG(r.review_rating) FROM h_review r
+        WHERE r.agent_id= #{agentId}
+          AND r.review_target_type = 2
+          AND r.review_is_show = 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO h_review (
+            <if test="transactionId != null">transaction_id,</if>
+            house_id, agent_id, customer_id, review_target_type,
+            review_rating, review_content, review_images, review_is_show
+        ) VALUES (
+            <if test="transactionId != null">#{transactionId},</if>
+            #{houseId}, #{agentId}, #{customerId}, #{targetType},
+            #{rating}, #{content}, #{images,jdbcType=VARCHAR}, #{isShow}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE h_review
+        <set>
+            <if test="rating != null">review_rating = #{rating},</if>
+            <if test="content != null">review_content = #{content},</if>
+            <if test="images != null">review_images = #{images},</if>
+            <if test="replyContent != null">review_reply_content = #{replyContent},</if>
+            <if test="replyTime != null">review_reply_time = #{replyTime},</if>
+            <if test="isShow != null">review_is_show = #{isShow},</if>
+        </set>
+        WHERE review_id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM h_review WHERE review_id = #{id}
+    </delete>
+
+</mapper>

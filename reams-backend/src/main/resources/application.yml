@@ -1,0 +1,105 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: reams-backend
+
+  # ========== MVC 配置 ==========
+  mvc:
+    format:
+      date: yyyy-MM-dd HH:mm:ss
+    static-path-pattern: /**
+
+  # ========== Servlet 配置（统一放在一起）==========
+  servlet:
+    # 字符编码（Spring Boot 3.x）
+    encoding:
+      charset: UTF-8
+      force: true
+      force-request: true
+      force-response: true
+    # 文件上传
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+  # ========== 静态资源 ==========
+  web:
+    resources:
+      static-locations:
+        - classpath:/static/
+        - file:./uploads/
+
+  # ========== 数据源 ==========
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/reams?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      filters: stat,wall,slf4j
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+      # Druid 监控（可选，建议加上）
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        login-username: admin
+        login-password: admin123
+        allow: ""
+
+  # ========== Redis ==========
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 0
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+
+# ========== MyBatis ==========
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.reams.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# ========== JWT 配置 ==========
+jwt:
+  secret: reams-secret-key-2026-spring-boot-jwt-token
+  expiration: 604800000  # 7天
+  header: Authorization
+  token-prefix: Bearer
+
+# ========== 日志配置 ==========
+logging:
+  level:
+    root: INFO
+    com.reams: DEBUG
+    org.springframework.security: DEBUG
+
+# ========== 文件上传配置 ==========
+file:
+  upload-dir: ./uploads
+  access-path: /uploads/**

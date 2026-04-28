@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#831843"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect x="150" y="170" width="900" height="430" rx="34" fill="rgba(255,255,255,0.12)"/>
+  <circle cx="960" cy="245" r="80" fill="rgba(255,255,255,0.18)"/>
+  <rect x="230" y="300" width="220" height="210" rx="18" fill="#fef3c7"/>
+  <rect x="500" y="250" width="180" height="260" rx="18" fill="#fde68a"/>
+  <rect x="730" y="220" width="210" height="290" rx="18" fill="#fcd34d"/>
+  <text x="155" y="125" fill="#fff7ed" font-size="74" font-family="Arial, sans-serif" font-weight="700">JINGAN LUXURY</text>
+  <text x="158" y="185" fill="#ffedd5" font-size="31" font-family="Arial, sans-serif">premium avenue demo cover</text>
+</svg>

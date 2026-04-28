@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.reams.mapper.MessageMapper">
+
+    <resultMap id="BaseResultMap" type="com.reams.entity.Message">
+        <id column="message_id" property="id"/>
+        <result column="message_sender_id" property="senderId"/>
+        <result column="message_sender_type" property="senderType"/>
+        <result column="message_receiver_id" property="receiverId"/>
+        <result column="message_receiver_type" property="receiverType"/>
+        <result column="message_type" property="messageType"/>
+        <result column="message_content_type" property="contentType"/>
+        <result column="message_title" property="title"/>
+        <result column="message_content" property="content"/>
+        <result column="message_scene" property="messageScene"/>
+        <result column="message_house_id" property="houseId"/>
+        <result column="message_viewing_id" property="viewingId"/>
+        <result column="message_is_read" property="isRead"/>
+        <result column="message_read_time" property="readTime"/>
+        <result column="message_create_time" property="createTime"/>
+        <result column="message_update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 根据 ID 查询消息 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM h_message WHERE message_id = #{id}
+    </select>
+
+    <!-- 查询我的消息列表 -->
+    <select id="selectMyMessages" resultMap="BaseResultMap">
+        SELECT * FROM h_message 
+        WHERE (message_sender_id = #{userId} AND message_sender_type = #{userType})
+           OR (message_receiver_id = #{userId} AND message_receiver_type = #{userType})
+        ORDER BY message_create_time DESC
+    </select>
+
+    <!-- 查询我的消息总数 -->
+    <select id="countMyMessages" resultType="int">
+        SELECT COUNT(*) FROM h_message 
+        WHERE (message_sender_id = #{userId} AND message_sender_type = #{userType})
+           OR (message_receiver_id = #{userId} AND message_receiver_type = #{userType})
+    </select>
+
+    <!-- 查询未读消息数量 -->
+    <select id="countUnreadMessages" resultType="int">
+        SELECT COUNT(*) FROM h_message 
+        WHERE message_receiver_id = #{userId} 
+          AND message_receiver_type = #{userType}
+          AND message_is_read = 0
+    </select>
+    
+    <!-- 将所有未读消息标记为已读 -->
+    <update id="markAllAsRead">
+        UPDATE h_message 
+        SET message_is_read = 1 
+        WHERE message_receiver_id = #{userId} 
+          AND message_receiver_type = #{userType}
+          AND message_is_read = 0
+    </update>
+
+    <!-- 插入消息 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO h_message (
+            message_sender_id, message_sender_type, message_receiver_id, message_receiver_type,
+            message_type, message_content_type, message_scene, message_title, message_content,
+            message_house_id, message_viewing_id, message_is_read
+        ) VALUES (
+            #{senderId}, #{senderType}, #{receiverId}, #{receiverType},
+            #{messageType}, #{contentType}, #{messageScene}, #{title}, #{content},
+            #{houseId}, #{viewingId}, #{isRead}
+        )
+    </insert>
+
+    <!-- 更新消息 -->
+    <update id="update">
+        UPDATE h_message
+        <set>
+            <if test="isRead != null">message_is_read = #{isRead},</if>
+            <if test="readTime != null">message_read_time = #{readTime},</if>
+        </set>
+        WHERE message_id = #{id}
+    </update>
+
+    <!-- 删除消息 -->
+    <delete id="deleteById">
+        DELETE FROM h_message WHERE message_id = #{id}
+    </delete>
+    
+    <!-- 获取对话列表（包含系统消息） -->
+    <select id="selectConversations" resultType="java.util.Map">
+        SELECT 
+            partner.partner_id AS id,
+            partner.partner_type AS type,
+            partner.last_time,
+            partner.unread_count,
+            last_msg.message_content AS last_content,
+            last_msg.message_content_type AS last_content_type,
+            last_msg.message_title AS last_title,
+            last_msg.message_type AS last_message_type,
+            last_msg.message_id AS last_msg_id,
+            last_msg.message_sender_id AS last_sender_id,
+            last_msg.message_sender_type AS last_sender_type,
+            last_msg.message_receiver_id AS last_receiver_id,
+            last_msg.message_receiver_type AS last_receiver_type
+        FROM (
+            SELECT 
+                CASE 
+                    WHEN m.message_sender_type = 1 AND m.message_sender_id = 0 THEN 0
+                    WHEN m.message_receiver_id = #{userId} AND m.message_receiver_type = #{userType} 
+                    THEN m.message_sender_id 
+                    ELSE m.message_receiver_id 
+                END AS partner_id,
+                CASE 
+                    WHEN m.message_sender_type = 1 AND m.message_sender_id = 0 THEN 1
+                    WHEN m.message_receiver_id = #{userId} AND m.message_receiver_type = #{userType} 
+                    THEN m.message_sender_type 
+                    ELSE m.message_receiver_type 
+                END AS partner_type,
+                MAX(m.message_create_time) AS last_time,
+                COUNT(CASE WHEN m.message_is_read = 0 AND m.message_receiver_id = #{userId} AND m.message_receiver_type = #{userType} THEN 1 END) AS unread_count
+            FROM h_message m
+            WHERE (
+                (m.message_receiver_id = #{userId} AND m.message_receiver_type = #{userType})
+                OR (m.message_sender_id = #{userId} AND m.message_sender_type = #{userType} 
+                    AND NOT (m.message_sender_type = 1 AND m.message_sender_id = 0))
+            )
+            AND NOT (m.message_sender_id = #{userId} AND m.message_sender_type = #{userType} 
+                     AND m.message_receiver_id = #{userId} AND m.message_receiver_type = #{userType})
+            GROUP BY 
+                CASE 
+                    WHEN m.message_sender_type = 1 AND m.message_sender_id = 0 THEN 0
+                    WHEN m.message_receiver_id = #{userId} AND m.message_receiver_type = #{userType} 
+                    THEN m.message_sender_id 
+                    ELSE m.message_receiver_id 
+                END,
+                CASE 
+                    WHEN m.message_sender_type = 1 AND m.message_sender_id = 0 THEN 1
+                    WHEN m.message_receiver_id = #{userId} AND m.message_receiver_type = #{userType} 
+                    THEN m.message_sender_type 
+                    ELSE m.message_receiver_type 
+                END
+        ) partner
+        LEFT JOIN h_message last_msg ON last_msg.message_id = (
+            SELECT m3.message_id FROM h_message m3
+            WHERE (
+                (partner.partner_id = 0 AND partner.partner_type = 1
+                 AND m3.message_sender_type = 1 AND m3.message_sender_id = 0
+                 AND m3.message_receiver_id = #{userId} AND m3.message_receiver_type = #{userType})
+                OR
+                ((m3.message_sender_id = partner.partner_id AND m3.message_sender_type = partner.partner_type
+                   AND m3.message_receiver_id = #{userId} AND m3.message_receiver_type = #{userType})
+                  OR
+                  (m3.message_sender_id = #{userId} AND m3.message_sender_type = #{userType}
+                   AND m3.message_receiver_id = partner.partner_id AND m3.message_receiver_type = partner.partner_type))
+            )
+            ORDER BY m3.message_create_time DESC, m3.message_id DESC
+            LIMIT 1
+        )
+        ORDER BY partner.last_time DESC
+    </select>
+    
+    <!-- 获取与指定用户的对话消息 -->
+    <select id="selectChatMessages" resultMap="BaseResultMap">
+        SELECT * FROM h_message 
+        WHERE (message_sender_id = #{userId} AND message_sender_type = #{userType}
+               AND message_receiver_id = #{targetId} AND message_receiver_type = #{targetType})
+           OR (message_sender_id = #{targetId} AND message_sender_type = #{targetType}
+               AND message_receiver_id = #{userId} AND message_receiver_type = #{userType})
+        ORDER BY message_create_time ASC
+    </select>
+    
+    <!-- 统计与指定用户的对话消息数量 -->
+    <select id="countChatMessages" resultType="int">
+        SELECT COUNT(*) FROM h_message 
+        WHERE (message_sender_id = #{userId} AND message_sender_type = #{userType}
+               AND message_receiver_id = #{targetId} AND message_receiver_type = #{targetType})
+           OR (message_sender_id = #{targetId} AND message_sender_type = #{targetType}
+               AND message_receiver_id = #{userId} AND message_receiver_type = #{userType})
+    </select>
+
+</mapper>

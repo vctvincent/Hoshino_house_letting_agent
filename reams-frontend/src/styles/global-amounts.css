@@ -1,0 +1,71 @@
+:root {
+  --amount-accent: #dc2626;
+}
+
+.amount-text,
+.price,
+.price-value,
+.fav-price,
+.price-change,
+.amount-table .money,
+.price-info .price,
+.price-info .price span,
+.total-price .amount,
+.house-price .price,
+.house-price .price-symbol,
+.house-price .price-unit,
+.dialog-house-copy em,
+.house-selector-copy em,
+.review-house-tags span:first-child,
+.selected-house-tags span:first-child,
+.candidate-meta span:first-child {
+  color: var(--amount-accent) !important;
+}
+
+.amount-text {
+  font-weight: 700;
+}
+
+/* Kanban Styles */
+.kanban-board {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 1rem;
+  align-items: flex-start;
+}
+
+.kanban-column {
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+  min-width: 280px;
+  width: 280px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.kanban-column-header {
+  font-weight: 600;
+  color: #374151;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.kanban-card {
+  background-color: #ffffff;
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  padding: 0.75rem;
+  cursor: grab;
+  transition: box-shadow 0.2s ease;
+}
+
+.kanban-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.kanban-card:active {
+  cursor: grabbing;
+}

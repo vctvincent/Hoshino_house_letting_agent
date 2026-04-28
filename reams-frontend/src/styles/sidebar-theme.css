@@ -1,0 +1,20 @@
+.admin-layout,
+.agent-layout {
+  --sidebar-top-start: #2a394c;
+  --sidebar-top-end: #233041;
+  --sidebar-body-start: #233041;
+  --sidebar-body-end: #1b2634;
+  --sidebar-menu-text: #d4dbe5;
+  --sidebar-menu-hover-text: #ffffff;
+  --sidebar-menu-hover-bg: rgba(255, 255, 255, 0.06);
+  --sidebar-menu-active-text: #f4e4bc;
+  --sidebar-menu-active-bg-start: rgba(244, 228, 188, 0.18);
+  --sidebar-menu-active-bg-end: rgba(244, 228, 188, 0.02);
+  --sidebar-menu-active-border: rgba(244, 228, 188, 0.78);
+  --sidebar-divider: rgba(255, 255, 255, 0.08);
+  --sidebar-avatar-bg: rgba(255, 255, 255, 0.14);
+  --sidebar-avatar-ring: rgba(255, 255, 255, 0.12);
+  --sidebar-scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --sidebar-scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
+  --content-bg: #f0f2f5;
+}

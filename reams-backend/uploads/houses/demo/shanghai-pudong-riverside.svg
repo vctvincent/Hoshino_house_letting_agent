@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <path d="M0 620 C180 560 340 560 520 620 C690 675 850 675 1200 590 L1200 800 L0 800 Z" fill="#bfdbfe"/>
+  <rect x="260" y="190" width="110" height="360" fill="#dbeafe"/>
+  <rect x="400" y="110" width="130" height="440" fill="#c4b5fd"/>
+  <rect x="570" y="260" width="170" height="290" fill="#ddd6fe"/>
+  <rect x="790" y="160" width="130" height="390" fill="#e0e7ff"/>
+  <text x="125" y="145" fill="#f8fafc" font-size="76" font-family="Arial, sans-serif" font-weight="700">PUDONG RIVERSIDE</text>
+  <text x="128" y="210" fill="#dbeafe" font-size="32" font-family="Arial, sans-serif">lakeside skyline demo cover</text>
+</svg>

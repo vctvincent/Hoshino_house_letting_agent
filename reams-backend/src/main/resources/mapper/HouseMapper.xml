@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.reams.mapper.HouseMapper">
+
+    <resultMap id="BaseResultMap" type="com.reams.entity.House">
+        <id column="house_id" property="id"/>
+        <result column="agent_id" property="agentId"/>
+        <result column="house_title" property="title"/>
+        <result column="house_address" property="address"/>
+        <result column="house_province" property="province"/>
+        <result column="house_city" property="city"/>
+        <result column="house_district" property="district"/>
+        <result column="house_community" property="community"/>
+        <result column="house_area" property="area"/>
+        <result column="house_price" property="price"/>
+        <result column="house_unit_price" property="unitPrice"/>
+        <result column="house_type" property="houseType"/>
+        <result column="house_layout" property="layout"/>
+        <result column="house_floor" property="floor"/>
+        <result column="house_total_floor" property="totalFloor"/>
+        <result column="house_building_year" property="buildingYear"/>
+        <result column="house_orientation" property="orientation"/>
+        <result column="house_decoration" property="decoration"/>
+        <result column="house_property_type" property="propertyType"/>
+        <result column="house_property_fee" property="propertyFee"/>
+        <result column="house_elevator" property="elevator"/>
+        <result column="house_heating" property="heating"/>
+        <result column="house_description" property="description"/>
+        <result column="house_images" property="images"/>
+        <result column="house_video_url" property="videoUrl"/>
+        <result column="house_facilities" property="facilities"/>
+        <result column="house_tags" property="tags"/>
+        <result column="house_status" property="houseStatus"/>
+        <result column="house_view_count" property="viewCount"/>
+        <result column="house_favorite_count" property="favoriteCount"/>
+        <result column="house_audit_status" property="auditStatus"/>
+        <result column="house_reject_reason" property="rejectReason"/>
+        <result column="house_create_time" property="createTime"/>
+        <result column="house_update_time" property="updateTime"/>
+        <result column="agent_name" property="agentName"/>
+        <result column="agent_phone" property="agentPhone"/>
+    </resultMap>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT h.*,
+        CONVERT(h.house_images USING utf8) as house_images,
+        a.agent_name as agent_name, a.agent_phone as agent_phone
+        FROM h_house h
+        LEFT JOIN sys_agent a ON h.agent_id = a.agent_id
+        <where>
+            <!-- ★ 删除了默认 house_status = 1 的过滤 -->
+            <if test="title != null and title != ''">
+                AND h.house_title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    h.house_title LIKE CONCAT('%', #{keyword}, '%')
+                    OR h.house_address LIKE CONCAT('%', #{keyword}, '%')
+                    OR h.house_community LIKE CONCAT('%', #{keyword}, '%')
+                    OR h.house_city LIKE CONCAT('%', #{keyword}, '%')
+                    OR h.house_district LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+            <if test="province != null and province != ''">
+                AND h.house_province = #{province}
+            </if>
+            <choose>
+                <when test="cityAliases != null and cityAliases.size() > 0">
+                    AND h.house_city IN
+                    <foreach collection="cityAliases" item="cityAlias" open="(" separator="," close=")">
+                        #{cityAlias}
+                    </foreach>
+                </when>
+                <when test="city != null and city != ''">
+                    AND h.house_city = #{city}
+                </when>
+            </choose>
+            <if test="district != null and district != ''">
+                AND h.house_district = #{district}
+            </if>
+            <if test="houseStatus != null">
+                AND h.house_status = #{houseStatus}
+            </if>
+            <if test="auditStatus != null">
+                AND h.house_audit_status = #{auditStatus}
+            </if>
+            <if test="agentId != null">
+                AND h.agent_id = #{agentId}
+            </if>
+            <if test="minPrice != null">
+                AND h.house_price &gt;= #{minPrice}
+            </if>
+            <if test="maxPrice != null">
+                AND h.house_price &lt;= #{maxPrice}
+            </if>
+            <if test="minArea != null">
+                AND h.house_area &gt;= #{minArea}
+            </if>
+            <if test="maxArea != null">
+                AND h.house_area &lt;= #{maxArea}
+            </if>
+            <if test="houseType != null and houseType != ''">
+                AND h.house_type LIKE CONCAT('%', #{houseType}, '%')
+            </if>
+            <if test="floorLevel != null and floorLevel == 1">
+                AND CAST(SUBSTRING_INDEX(h.house_floor, '/', 1) AS UNSIGNED) &lt;= 3
+            </if>
+            <if test="floorLevel != null and floorLevel == 2">
+                AND CAST(SUBSTRING_INDEX(h.house_floor, '/', 1) AS UNSIGNED) &gt;= 4
+                AND CAST(SUBSTRING_INDEX(h.house_floor, '/', 1) AS UNSIGNED) &lt;= 9
+            </if>
+            <if test="floorLevel != null and floorLevel == 3">
+                AND CAST(SUBSTRING_INDEX(h.house_floor, '/', 1) AS UNSIGNED) &gt;= 10
+            </if>
+            <if test="propertyType != null and propertyType != ''">
+                AND h.house_property_type = #{propertyType}
+            </if>
+        </where>
+        ORDER BY h.house_view_count DESC, h.house_create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="selectPublished" resultMap="BaseResultMap">
+        SELECT h.*,
+               CONVERT(h.house_images USING utf8) as house_images,
+               a.agent_name as agent_name, a.agent_phone as agent_phone
+        FROM h_house h
+                 LEFT JOIN sys_agent a ON h.agent_id = a.agent_id
+        WHERE h.house_status = 1 AND h.house_audit_status = 2
+        ORDER BY h.house_create_time DESC
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT h.*,
+               CONVERT(h.house_images USING utf8) as house_images,
+               a.agent_name as agent_name, a.agent_phone as agent_phone
+        FROM h_house h
+                 LEFT JOIN sys_agent a ON h.agent_id = a.agent_id
+        WHERE h.house_id = #{id}
+    </select>
+
+    <select id="selectByAgentId" resultMap="BaseResultMap">
+        SELECT *,
+               CONVERT(house_images USING utf8) as house_images
+        FROM h_house
+        WHERE agent_id = #{agentId}
+        ORDER BY house_create_time DESC
+    </select>
+
+    <select id="selectPendingAudit" resultMap="BaseResultMap">
+        SELECT h.*,
+               CONVERT(h.house_images USING utf8) as house_images,
+               a.agent_name as agent_name
+        FROM h_house h
+                 LEFT JOIN sys_agent a ON h.agent_id = a.agent_id
+        WHERE h.house_audit_status IN (0, 1)
+        ORDER BY h.house_create_time ASC
+    </select>
+
+    <select id="countPendingHouses" resultType="long">
+        SELECT COUNT(*) FROM h_house
+        WHERE house_audit_status IN (0, 1)
+    </select>
+
+    <select id="selectHot" resultMap="BaseResultMap">
+        SELECT h.*,
+        CONVERT(h.house_images USING utf8) as house_images,
+        a.agent_name as agent_name, a.agent_phone as agent_phone
+        FROM h_house h
+        LEFT JOIN sys_agent a ON h.agent_id = a.agent_id
+        WHERE h.house_status = 1 AND h.house_audit_status = 2
+        <if test="city != null and city != ''">
+            AND h.house_city = #{city}
+        </if>
+        ORDER BY h.house_view_count DESC, h.house_create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM h_house h
+        <where>
+            <!-- ★ 删除了默认 house_status = 1 的过滤 -->
+            <if test="title != null and title != ''">
+                AND h.house_title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    h.house_title LIKE CONCAT('%', #{keyword}, '%')
+                    OR h.house_address LIKE CONCAT('%', #{keyword}, '%')
+                    OR h.house_community LIKE CONCAT('%', #{keyword}, '%')
+                    OR h.house_city LIKE CONCAT('%', #{keyword}, '%')
+                    OR h.house_district LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+            <if test="province != null and province != ''">
+                AND h.house_province = #{province}
+            </if>
+            <choose>
+                <when test="cityAliases != null and cityAliases.size() > 0">
+                    AND h.house_city IN
+                    <foreach collection="cityAliases" item="cityAlias" open="(" separator="," close=")">
+                        #{cityAlias}
+                    </foreach>
+                </when>
+                <when test="city != null and city != ''">
+                    AND h.house_city = #{city}
+                </when>
+            </choose>
+            <if test="district != null and district != ''">
+                AND h.house_district = #{district}
+            </if>
+            <if test="houseStatus != null">
+                AND h.house_status = #{houseStatus}
+            </if>
+            <if test="auditStatus != null">
+                AND h.house_audit_status = #{auditStatus}
+            </if>
+            <if test="agentId != null">
+                AND h.agent_id = #{agentId}
+            </if>
+            <if test="minPrice != null">
+                AND h.house_price &gt;= #{minPrice}
+            </if>
+            <if test="maxPrice != null">
+                AND h.house_price &lt;= #{maxPrice}
+            </if>
+            <if test="minArea != null">
+                AND h.house_area &gt;= #{minArea}
+            </if>
+            <if test="maxArea != null">
+                AND h.house_area &lt;= #{maxArea}
+            </if>
+            <if test="houseType != null and houseType != ''">
+                AND h.house_type LIKE CONCAT('%', #{houseType}, '%')
+            </if>
+            <if test="floorLevel != null and floorLevel == 1">
+                AND CAST(SUBSTRING_INDEX(h.house_floor, '/', 1) AS UNSIGNED) &lt;= 3
+            </if>
+            <if test="floorLevel != null and floorLevel == 2">
+                AND CAST(SUBSTRING_INDEX(h.house_floor, '/', 1) AS UNSIGNED) &gt;= 4
+                AND CAST(SUBSTRING_INDEX(h.house_floor, '/', 1) AS UNSIGNED) &lt;= 9
+            </if>
+            <if test="floorLevel != null and floorLevel == 3">
+                AND CAST(SUBSTRING_INDEX(h.house_floor, '/', 1) AS UNSIGNED) &gt;= 10
+            </if>
+            <if test="propertyType != null and propertyType != ''">
+                AND h.house_property_type = #{propertyType}
+            </if>
+        </where>
+    </select>
+
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO h_house (
+            agent_id, house_title, house_address, house_province, house_city, house_district, house_community,
+            house_area, house_price, house_unit_price, house_type, house_layout, house_floor, house_total_floor,
+            house_building_year, house_orientation, house_decoration, house_property_type, house_property_fee,
+            house_elevator, house_heating, house_description, house_images, house_video_url, house_facilities, house_tags,
+            house_status, house_audit_status
+        ) VALUES (
+                     #{agentId}, #{title}, #{address}, #{province}, #{city}, #{district}, #{community},
+                     #{area}, #{price}, #{unitPrice}, #{houseType}, #{layout}, #{floor}, #{totalFloor},
+                     #{buildingYear}, #{orientation}, #{decoration}, #{propertyType}, #{propertyFee},
+                     #{elevator}, #{heating}, #{description}, CAST(#{images} AS JSON), #{videoUrl}, CAST(#{facilities} AS JSON), #{tags},
+                     #{houseStatus}, #{auditStatus}
+                 )
+    </insert>
+
+    <update id="update">
+        UPDATE h_house
+        <set>
+            <if test="title != null">house_title = #{title},</if>
+            <if test="address != null">house_address = #{address},</if>
+            <if test="province != null">house_province = #{province},</if>
+            <if test="city != null">house_city = #{city},</if>
+            <if test="district != null">house_district = #{district},</if>
+            <if test="community != null">house_community = #{community},</if>
+            <if test="area != null">house_area = #{area},</if>
+            <if test="price != null">house_price = #{price},</if>
+            <if test="unitPrice != null">house_unit_price = #{unitPrice},</if>
+            <if test="houseType != null">house_type = #{houseType},</if>
+            <if test="layout != null">house_layout = #{layout},</if>
+            <if test="floor != null">house_floor = #{floor},</if>
+            <if test="totalFloor != null">house_total_floor = #{totalFloor},</if>
+            <if test="buildingYear != null">house_building_year = #{buildingYear},</if>
+            <if test="orientation != null">house_orientation = #{orientation},</if>
+            <if test="decoration != null">house_decoration = #{decoration},</if>
+            <if test="propertyType != null">house_property_type = #{propertyType},</if>
+            <if test="propertyFee != null">house_property_fee = #{propertyFee},</if>
+            <if test="elevator != null">house_elevator = #{elevator},</if>
+            <if test="heating != null">house_heating = #{heating},</if>
+            <if test="description != null">house_description = #{description},</if>
+            <if test="images != null">house_images = CAST(#{images} AS JSON),</if>
+            <if test="videoUrl != null">house_video_url = #{videoUrl},</if>
+            <if test="facilities != null">house_facilities = CAST(#{facilities} AS JSON),</if>
+            <if test="tags != null">house_tags = #{tags},</if>
+            <if test="houseStatus != null">house_status = #{houseStatus},</if>
+            <if test="auditStatus != null">house_audit_status = #{auditStatus},</if>
+            <if test="rejectReason != null">house_reject_reason = #{rejectReason},</if>
+        </set>
+        WHERE house_id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM h_house WHERE house_id = #{id}
+    </delete>
+
+    <update id="updateStatus">
+        UPDATE h_house SET house_status = #{status} WHERE house_id = #{id}
+    </update>
+
+    <update id="updateAuditStatus">
+        UPDATE h_house SET house_audit_status = #{auditStatus}, house_reject_reason = #{rejectReason} WHERE house_id = #{id}
+    </update>
+
+    <update id="incrementViewCount">
+        UPDATE h_house SET house_view_count = house_view_count + 1 WHERE house_id = #{id}
+    </update>
+
+    <update id="incrementFavoriteCount">
+        UPDATE h_house SET house_favorite_count = house_favorite_count + 1 WHERE house_id = #{id}
+    </update>
+
+    <update id="decrementFavoriteCount">
+        UPDATE h_house SET house_favorite_count = house_favorite_count - 1 WHERE house_id = #{id} AND house_favorite_count &gt; 0
+    </update>
+
+    <select id="selectCityList" resultType="java.lang.String">
+        SELECT DISTINCT house_city FROM h_house
+        WHERE house_city IS NOT NULL AND house_city != ''
+        ORDER BY house_city
+    </select>
+
+    <select id="selectDistrictList" resultType="java.lang.String">
+        SELECT DISTINCT house_district FROM h_house
+        WHERE house_city = #{city}
+          AND house_district IS NOT NULL
+          AND house_district != ''
+        ORDER BY house_district
+    </select>
+
+    <select id="selectDistrictListByCities" resultType="java.lang.String">
+        SELECT DISTINCT house_district FROM h_house
+        WHERE house_city IN
+        <foreach collection="cities" item="city" open="(" separator="," close=")">
+            #{city}
+        </foreach>
+          AND house_district IS NOT NULL
+          AND house_district != ''
+        ORDER BY house_district
+    </select>
+
+    <select id="selectDistrictInventory" resultType="java.util.Map">
+        SELECT
+            h.house_province AS province,
+            h.house_city AS city,
+            h.house_district AS district,
+            COUNT(*) AS houseCount,
+            SUM(CASE WHEN h.house_status = 1 AND h.house_audit_status = 2 THEN 1 ELSE 0 END) AS publishedCount,
+            COALESCE(ROUND(AVG(h.house_price), 2), 0) AS averagePrice,
+            COALESCE(ROUND(AVG(
+                CASE
+                    WHEN h.house_unit_price IS NOT NULL AND h.house_unit_price &gt; 0 THEN h.house_unit_price
+                    WHEN h.house_area IS NOT NULL AND h.house_area &gt; 0 THEN (h.house_price * 10000 / h.house_area)
+                    ELSE NULL
+                END
+            ), 2), 0) AS averageUnitPrice
+        FROM h_house h
+        WHERE h.house_province IS NOT NULL
+          AND h.house_province != ''
+          AND h.house_district IS NOT NULL
+          AND h.house_district != ''
+        GROUP BY h.house_province, h.house_city, h.house_district
+        ORDER BY houseCount DESC, publishedCount DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectAgentDistrictInventory" resultType="java.util.Map">
+        SELECT
+            h.house_province AS province,
+            h.house_city AS city,
+            h.house_district AS district,
+            COUNT(*) AS houseCount,
+            SUM(CASE WHEN h.house_status = 1 AND h.house_audit_status = 2 THEN 1 ELSE 0 END) AS publishedCount,
+            COALESCE(ROUND(AVG(h.house_price), 2), 0) AS averagePrice,
+            COALESCE(ROUND(AVG(
+                CASE
+                    WHEN h.house_unit_price IS NOT NULL AND h.house_unit_price &gt; 0 THEN h.house_unit_price
+                    WHEN h.house_area IS NOT NULL AND h.house_area &gt; 0 THEN (h.house_price * 10000 / h.house_area)
+                    ELSE NULL
+                END
+            ), 2), 0) AS averageUnitPrice
+        FROM h_house h
+        WHERE h.agent_id = #{agentId}
+          AND h.house_province IS NOT NULL
+          AND h.house_province != ''
+          AND h.house_district IS NOT NULL
+          AND h.house_district != ''
+        GROUP BY h.house_province, h.house_city, h.house_district
+        ORDER BY houseCount DESC, publishedCount DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

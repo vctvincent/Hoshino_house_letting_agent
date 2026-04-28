@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#164e63"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <circle cx="1000" cy="120" r="140" fill="rgba(255,255,255,0.12)"/>
+  <rect x="130" y="450" width="120" height="210" fill="#d7f4ef"/>
+  <rect x="280" y="350" width="150" height="310" fill="#b9efe6"/>
+  <rect x="460" y="240" width="190" height="420" fill="#8ddfd2"/>
+  <rect x="690" y="300" width="145" height="360" fill="#74d6c7"/>
+  <rect x="870" y="390" width="170" height="270" fill="#5ecbbb"/>
+  <text x="120" y="170" fill="#ffffff" font-size="82" font-family="Arial, sans-serif" font-weight="700">CHAOYANG CBD</text>
+  <text x="122" y="250" fill="#d5faf5" font-size="34" font-family="Arial, sans-serif">urban skyline demo cover</text>
+</svg>

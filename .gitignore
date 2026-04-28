@@ -1,0 +1,26 @@
+# Build
+dist/
+target/
+*.class
+
+# Dependencies
+node_modules/
+Maven/
+
+# IDE
+.idea/
+*.iml
+
+# Env
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude
+.claude/
+
+# Logs
+*.log

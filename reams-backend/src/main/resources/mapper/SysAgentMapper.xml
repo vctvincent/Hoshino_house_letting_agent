@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.reams.mapper.SysAgentMapper">
+
+    <resultMap id="BaseResultMap" type="com.reams.entity.SysAgent">
+        <id column="agent_id" property="id"/>
+        <result column="agent_password" property="password"/>
+        <result column="agent_name" property="name"/>
+        <result column="agent_phone" property="phone"/>
+        <result column="agent_email" property="email"/>
+        <result column="agent_avatar" property="avatar"/>
+        <result column="agent_gender" property="gender"/>
+        <result column="agent_rating" property="rating"/>
+        <result column="agent_deal_count" property="dealCount"/>
+        <result column="agent_years_experience" property="yearsExperience"/>
+        <result column="agent_introduction" property="introduction"/>
+        <result column="agent_company" property="company"/>
+        <result column="agent_status" property="status"/>
+        <result column="agent_create_time" property="createTime"/>
+        <result column="agent_update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectByPhone" resultMap="BaseResultMap">
+        SELECT * FROM sys_agent WHERE agent_phone = #{phone}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM sys_agent ORDER BY agent_create_time DESC
+    </select>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM sys_agent ORDER BY agent_create_time DESC LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM sys_agent WHERE agent_id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_agent (
+            agent_password, agent_name, agent_phone, agent_email,
+            agent_avatar, agent_gender, agent_rating, agent_deal_count,
+            agent_years_experience, agent_introduction, agent_company, agent_status
+        ) VALUES (
+            #{password}, #{name}, #{phone}, #{email}, #{avatar},
+            #{gender}, #{rating}, #{dealCount}, #{yearsExperience}, #{introduction},
+            #{company}, #{status}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE sys_agent
+        <set>
+            <if test="password != null">agent_password = #{password},</if>
+            <if test="name != null">agent_name = #{name},</if>
+            <if test="phone != null">agent_phone = #{phone},</if>
+            <if test="email != null">agent_email = #{email},</if>
+            <if test="avatar != null">agent_avatar = #{avatar},</if>
+            <if test="gender != null">agent_gender = #{gender},</if>
+            <if test="rating != null">agent_rating = #{rating},</if>
+            <if test="dealCount != null">agent_deal_count = #{dealCount},</if>
+            <if test="yearsExperience != null">agent_years_experience = #{yearsExperience},</if>
+            <if test="introduction != null">agent_introduction = #{introduction},</if>
+            <if test="company != null">agent_company = #{company},</if>
+            <if test="status != null">agent_status = #{status},</if>
+        </set>
+        WHERE agent_id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM sys_agent WHERE agent_id = #{id}
+    </delete>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM sys_agent
+    </select>
+
+    <select id="countPendingAgents" resultType="long">
+        SELECT COUNT(*) FROM sys_agent
+        WHERE agent_status = 2
+    </select>
+
+    <select id="selectPageWithSearch" resultMap="BaseResultMap">
+        SELECT * FROM sys_agent
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (agent_name LIKE CONCAT('%', #{keyword}, '%')
+                     OR agent_phone LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null">
+                AND agent_status = #{status}
+            </if>
+        </where>
+        ORDER BY agent_create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countWithSearch" resultType="long">
+        SELECT COUNT(*) FROM sys_agent
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (agent_name LIKE CONCAT('%', #{keyword}, '%')
+                     OR agent_phone LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null">
+                AND agent_status = #{status}
+            </if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.reams.mapper.HouseAuditMapper">
+
+    <resultMap id="BaseResultMap" type="com.reams.entity.HouseAudit">
+        <id column="audit_id" property="id"/>
+        <result column="house_id" property="houseId"/>
+        <result column="admin_id" property="auditorId"/>
+        <result column="audit_type" property="auditType"/>
+        <result column="audit_result" property="auditResult"/>
+        <result column="audit_reason" property="auditReason"/>
+        <result column="audit_time" property="auditTime"/>
+        <result column="audit_create_time" property="createTime"/>
+        <result column="auditor_name" property="auditorName"/>
+        <result column="house_title" property="houseTitle"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+      SELECT ha.*, a.admin_name as auditor_name, h.house_title as house_title
+        FROM h_audit ha
+        LEFT JOIN sys_admin a ON ha.admin_id = a.admin_id
+        LEFT JOIN h_house h ON ha.house_id = h.house_id
+        WHERE ha.audit_id = #{id}
+    </select>
+
+    <select id="selectByHouseId" resultMap="BaseResultMap">
+      SELECT ha.*, a.admin_name as auditor_name, h.house_title as house_title
+        FROM h_audit ha
+        LEFT JOIN sys_admin a ON ha.admin_id= a.admin_id
+        LEFT JOIN h_house h ON ha.house_id = h.house_id
+        WHERE ha.house_id = #{houseId}
+       ORDER BY ha.audit_time DESC
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+     SELECT ha.*, a.admin_name as auditor_name, h.house_title as house_title
+        FROM h_audit ha
+        LEFT JOIN sys_admin a ON ha.admin_id= a.admin_id
+        LEFT JOIN h_house h ON ha.house_id = h.house_id
+       ORDER BY ha.audit_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO h_audit (
+            house_id, admin_id, audit_type, audit_result, audit_reason
+        ) VALUES (
+            #{houseId}, #{auditorId}, #{auditType}, #{auditResult}, #{auditReason}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE h_audit
+        <set>
+            <if test="auditResult != null">audit_result = #{auditResult},</if>
+            <if test="auditReason != null">audit_reason = #{auditReason},</if>
+            <if test="auditTime != null">audit_time = #{auditTime},</if>
+        </set>
+        WHERE audit_id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM h_audit WHERE audit_id = #{id}
+    </delete>
+</mapper>
